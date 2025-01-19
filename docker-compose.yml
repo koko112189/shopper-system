@@ -154,7 +154,7 @@ services:
 
   app-shopper:
     build:
-      context: ./app-shopper
+      context: ./shopper-app
     container_name: app-shopper
     command: npm run start
     ports: 
