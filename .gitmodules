@@ -13,3 +13,6 @@
 [submodule "mstrans-prod"]
 	path = mstrans-prod
 	url = https://github.com/koko112189/mstrans-prod.git
+[submodule "ms-order"]
+	path = ms-order
+	url = https://github.com/koko112189/ms-order.git
