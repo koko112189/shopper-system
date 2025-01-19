@@ -1,0 +1,181 @@
+version: '3.9'
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app_network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    ports:
+      - '5672:5672' 
+      - '15672:15672' 
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - app_network
+
+  ms-product:
+    build:
+      context: ./ms-product
+    container_name: ms-product
+    command: npm run start:dev
+    ports: 
+      - "3001:3001"
+      - "9229:9229"
+    environment:
+      PGHOST: postgres
+      PGPORT: 5432
+      PGUSER: admin
+      PGPASSWORD: admin
+      PGDATABASE: ms_product_db
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: admin
+      RABBITMQ_PASS: admin
+    depends_on:
+      - postgres
+      - rabbitmq
+    volumes:
+      - ./ms-product:/app  
+      - /app/node_modules  
+    networks:
+      - app_network
+  
+  ms-customer:
+    build:
+      context: ./ms-customer
+    container_name: ms-customer
+    command: npm run start:dev
+    ports: 
+      - "3004:3004"
+    environment:
+      PGHOST: postgres
+      PGPORT: 5432
+      PGUSER: admin
+      PGPASSWORD: admin
+      PGDATABASE: ms_customer_db
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: admin
+      RABBITMQ_PASS: admin
+    depends_on:
+      - postgres
+      - rabbitmq
+    volumes:
+      - ./ms-customer:/app  
+      - /app/node_modules  
+    networks:
+      - app_network
+
+  ms-order:
+    build:
+      context: ./ms-order
+    container_name: ms-order
+    command: npm run start:dev
+    ports: 
+      - "3005:3005"
+    environment:
+      PGHOST: postgres
+      PGPORT: 5432
+      PGUSER: admin
+      PGPASSWORD: admin
+      PGDATABASE: ms_order_db
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: admin
+      RABBITMQ_PASS: admin
+    depends_on:
+      - postgres
+      - rabbitmq
+    volumes:
+      - ./ms-order:/app  
+      - /app/node_modules  
+    networks:
+      - app_network
+
+  mstrans-prod:
+    build:
+      context: ./mstrans-prod
+    container_name: mstrans-prod
+    ports: 
+      - "3002:3002"
+    environment:
+      PGHOST: postgres
+      PGPORT: 5432
+      PGUSER: admin
+      PGPASSWORD: admin
+      PGDATABASE: mstrans_prod_db
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: admin
+      RABBITMQ_PASS: admin
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - app_network
+
+  ms-payments:
+    build:
+      context: ./ms-payments
+    container_name: ms-payments
+    ports: 
+      - "3003:3003"
+    environment:
+      PGHOST: postgres
+      PGPORT: 5432
+      PGUSER: admin
+      PGPASSWORD: admin
+      PGDATABASE: ms_payments_db
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: admin
+      RABBITMQ_PASS: admin
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - app_network
+
+  app-shopper:
+    build:
+      context: ./app-shopper
+    container_name: app-shopper
+    command: npm run start
+    ports: 
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      REACT_APP_API_BASE_URL: http://localhost:3001
+      REACT_APP_API_VERSION: v1
+      REACT_APP_PAYMENT_GATEWAY_URL: http://localhost:3003
+    volumes:
+      - ./app-shopper:/app
+    depends_on:
+      - ms-product
+      - ms-payments
+    networks:
+      - app_network
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+
+networks:
+  app_network:
