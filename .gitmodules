@@ -1,0 +1,15 @@
+[submodule "ms-product"]
+	path = ms-product
+	url = https://github.com/koko112189/ms-product.git
+[submodule "ms-customer"]
+	path = ms-customer
+	url = https://github.com/koko112189/ms-customer.git
+[submodule "ms-payments"]
+	path = ms-payments
+	url = https://github.com/koko112189/ms-payments.git
+[submodule "shopper-app"]
+	path = shopper-app
+	url = https://github.com/koko112189/shopper-app.git
+[submodule "mstrans-prod"]
+	path = mstrans-prod
+	url = https://github.com/koko112189/mstrans-prod.git
