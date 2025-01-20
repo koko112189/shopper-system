@@ -33,7 +33,7 @@ services:
     build:
       context: ./ms-product
     container_name: ms-product
-    command: npm run start:dev
+    command: /bin/sh -c "if [ ! -f .env ]; then cp .env.example .env; fi && npm run start:dev"
     ports: 
       - "3001:3001"
       - "9229:9229"
@@ -60,7 +60,7 @@ services:
     build:
       context: ./ms-customer
     container_name: ms-customer
-    command: npm run start:dev
+    command: /bin/sh -c "if [ ! -f .env ]; then cp .env.example .env; fi && npm run start:dev"
     ports: 
       - "3004:3004"
     environment:
@@ -86,7 +86,7 @@ services:
     build:
       context: ./ms-order
     container_name: ms-order
-    command: npm run start:dev
+    command: /bin/sh -c "if [ ! -f .env ]; then cp .env.example .env; fi && npm run start:dev"
     ports: 
       - "3005:3005"
     environment:
@@ -108,32 +108,11 @@ services:
     networks:
       - app_network
 
-  mstrans-prod:
-    build:
-      context: ./mstrans-prod
-    container_name: mstrans-prod
-    ports: 
-      - "3002:3002"
-    environment:
-      PGHOST: postgres
-      PGPORT: 5432
-      PGUSER: admin
-      PGPASSWORD: admin
-      PGDATABASE: mstrans_prod_db
-      RABBITMQ_HOST: rabbitmq
-      RABBITMQ_PORT: 5672
-      RABBITMQ_USER: admin
-      RABBITMQ_PASS: admin
-    depends_on:
-      - postgres
-      - rabbitmq
-    networks:
-      - app_network
-
   ms-payments:
     build:
       context: ./ms-payments
     container_name: ms-payments
+    command: /bin/sh -c "if [ ! -f .env ]; then cp .env.example .env; fi && npm run start:dev"
     ports: 
       - "3003:3003"
     environment:
@@ -155,7 +134,7 @@ services:
   app-shopper:
     build:
       context: ./shopper-app
-    container_name: app-shopper
+    container_name: shopper-app
     command: npm run start
     ports: 
       - "3000:3000"
@@ -166,7 +145,8 @@ services:
       REACT_APP_API_VERSION: v1
       REACT_APP_PAYMENT_GATEWAY_URL: http://localhost:3003
     volumes:
-      - ./app-shopper:/app
+      - ./shopper-app:/app
+      - /app/node_modules
     depends_on:
       - ms-product
       - ms-payments
